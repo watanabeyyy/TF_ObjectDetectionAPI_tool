@@ -54,6 +54,7 @@ protoc object_detection/protos/*.proto --python_out=.
 
 ### pycocotoolsのインストール
 ```
+pip install cython
 git clone https://github.com/cocodataset/cocoapi.git
 python setup.py build_ext install
 ```
