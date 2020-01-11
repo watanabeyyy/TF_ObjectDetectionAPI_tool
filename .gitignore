@@ -1,0 +1,8 @@
+.DS_Store
+*.tfrecord
+save
+saved_model
+protoc.exe
+exported_graphs
+__pycache__
+.vscode
