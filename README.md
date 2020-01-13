@@ -131,6 +131,7 @@ python ../models/research/object_detection/model_main.py `
 --model_dir="./saved_model"
 ```
 学習条件の設定はconfigファイルで行う。
+configの`fine_tune_checkpoint`の指定先を間違えているとエラーが発生するので注意。
 
 
 ## configファイルの詳細
