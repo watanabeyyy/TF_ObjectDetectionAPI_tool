@@ -5,4 +5,5 @@ saved_model
 protoc.exe
 exported_graphs
 __pycache__
+img
 .vscode
