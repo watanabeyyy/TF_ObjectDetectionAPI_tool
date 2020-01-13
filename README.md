@@ -10,6 +10,8 @@ ssdlite_mobilenet_v3_smallしか試していない
 # 動作環境
 python 3.6
 tensorflow 1.14.0
+cuda 10.0
+cudnn 7.6.4
 
 # 事前準備
 
@@ -54,6 +56,7 @@ protoc object_detection/protos/*.proto --python_out=.
 
 ### pycocotoolsのインストール
 ```
+pip install cython
 git clone https://github.com/cocodataset/cocoapi.git
 python setup.py build_ext install
 ```
