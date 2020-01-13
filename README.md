@@ -8,10 +8,10 @@ ssdlite_mobilenet_v3_smallしか試していない
 - https://github.com/karaage0703/object_detection_tools
 
 # 動作環境
-python 3.6
-tensorflow 1.14.0
-cuda 10.0
-cudnn 7.6.4
+- python 3.6
+- tensorflow 1.14.0
+- cuda 10.0
+- cudnn 7.6.4
 
 # 事前準備
 
@@ -89,8 +89,8 @@ python object_detection/builders/model_builder_test.py
 学習用のデータセットとして、PascalVOC形式のxmlファイルからTFrecordを作成する。
 ./data/trainと./data/valに保存される。
 ```
-python pascalvoc_to_tfrecord.py ^
---input_img_dir path_to_png_dir ^
+python pascalvoc_to_tfrecord.py `
+--input_img_dir path_to_png_dir `
 --input_xml_dir path_to_xml_dir
 ```
 アノテーションにはlabelimgの使用を推奨。
@@ -126,8 +126,8 @@ https://github.com/tensorflow/models/blob/master/research/object_detection/g3doc
 
 # 学習
 ```
-python ../models/research/object_detection/model_main.py ^
---pipeline_config_path="./config/ssdlite_mobilenet_v3_small_320x320_coco.config" ^
+python ../models/research/object_detection/model_main.py `
+--pipeline_config_path="./config/ssdlite_mobilenet_v3_small_320x320_coco.config" `
 --model_dir="./saved_model"
 ```
 学習条件の設定はconfigファイルで行う。
@@ -157,18 +157,18 @@ tensorboard --logdir=./saved_model
 ## 推論用モデルの作成
 checkpointから推論用の.pbを作成する。出力名は`frozen_inference_graph.pb`
 ```
-python ../models/research/object_detection/export_inference_graph.py ^
---input_type image_tensor ^
---pipeline_config_path ./config/ssdlite_mobilenet_v3_small_320x320_coco.config ^
---trained_checkpoint_prefix ./saved_model/model.ckpt-10000 ^
+python ../models/research/object_detection/export_inference_graph.py `
+--input_type image_tensor `
+--pipeline_config_path ./config/ssdlite_mobilenet_v3_small_320x320_coco.config `
+--trained_checkpoint_prefix ./saved_model/model.ckpt-10000 `
 --output_directory ./exported_graphs 
 ```
 
 ## inference
 ※png画像のみ対応。
 ```
-python inference.py ^
---model ./exported_graphs/frozen_inference_graph.pb ^
+python inference.py `
+--model ./exported_graphs/frozen_inference_graph.pb `
 --input_dir path_to_png_dir
 ```
 
@@ -176,28 +176,28 @@ python inference.py ^
 ## export .pb for tflite
 
 ```
-python ../models/research/object_detection/export_tflite_ssd_graph.py ^
---pipeline_config_path=./config/ssdlite_mobilenet_v3_small_320x320_coco.config ^
---trained_checkpoint_prefix=./saved_model/model.ckpt-10000 ^
---output_directory=./exported_graphs/tflite ^
---max_detections=100 ^
+python ../models/research/object_detection/export_tflite_ssd_graph.py `
+--pipeline_config_path=./config/ssdlite_mobilenet_v3_small_320x320_coco.config `
+--trained_checkpoint_prefix=./saved_model/model.ckpt-10000 `
+--output_directory=./exported_graphs/tflite `
+--max_detections=100 `
 --add_postprocessing_op=true 
 ```
 
 ## quantize
 これで.tfliteが作成できる
 ```
-tflite_convert ^
---output_file=./exported_graphs/tflite/tflite_graph.tflite ^
---graph_def_file=./exported_graphs/tflite/tflite_graph.pb ^
---inference_type="FLOAT" ^
---input_arrays=normalized_input_image_tensor ^
---input_shapes="1,320,320,3" ^
---output_arrays=TFLite_Detection_PostProcess,TFLite_Detection_PostProcess:1,TFLite_Detection_PostProcess:2,TFLite_Detection_PostProcess:3 ^
---default_ranges_min=0 ^
---default_ranges_max=6 ^
---mean_values=128 ^
---std_dev_values=128 ^
+tflite_convert `
+--output_file=./exported_graphs/tflite/tflite_graph.tflite `
+--graph_def_file=./exported_graphs/tflite/tflite_graph.pb `
+--inference_type="FLOAT" `
+--input_arrays=normalized_input_image_tensor `
+--input_shapes="1,320,320,3" `
+--output_arrays=TFLite_Detection_PostProcess,TFLite_Detection_PostProcess:1,TFLite_Detection_PostProcess:2,TFLite_Detection_PostProcess:3 `
+--default_ranges_min=0 `
+--default_ranges_max=6 `
+--mean_values=128 `
+--std_dev_values=128 `
 --allow_custom_ops
 ```
 
@@ -213,26 +213,28 @@ detection_boxes, detection_classes, detection_scores, and num_detections.
 ### inference
 ※png画像のみ対応。
 ```
-python inference.py ^
---model ./exported_graphs/tflite/tflite_graph.tflite ^
+python inference.py `
+--model ./exported_graphs/tflite/tflite_graph.tflite `
 --input_dir path_to_png_dir
 ```
 
 ### 速度比較
-画像3枚分測定
+3連続で推論実行し、時間計測
+
 #### 環境
-mobilenetv3
-windows
-cpu (core i5)
+- mobilenetv3
+- cpu (core i5)
 
 #### 結果
+tfliteの方が若干早いが、この条件では顕著な差は出なかった。
+初回の推論はどちらも少し時間がかかる。
+
 tflite
 ```
 inference_time =  0.10678958892822266 [sec]
 inference_time =  0.07995891571044922
 inference_time =  0.08995890617370605
 ```
-
 not tflite(.pb)
 ```
 inference_time =  0.1238710880279541
